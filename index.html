@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" id="meta-desc" content="HDM Vault — All-in-one cybersecurity suite." />
+    <meta name="theme-color" content="#F97316" />
+    <meta property="og:title" id="og-title" content="HDM Vault" />
+    <meta property="og:description" id="og-desc" content="All-in-one cybersecurity suite for complete digital protection." />
+    <meta property="og:image" content="/og-image.png" />
+    <title id="app-title">HDM Vault</title>
+    <script>
+      fetch('/api/v1/public/content/site-info')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.data) {
+            const d = data.data;
+            const titleText = d.tagline ? `${d.appName} — ${d.tagline}` : d.appName;
+            document.title = titleText;
+            document.getElementById('app-title').textContent = titleText;
+            if (d.appName) document.getElementById('og-title').setAttribute('content', d.appName);
+            if (d.tagline) {
+              document.getElementById('meta-desc').setAttribute('content', d.tagline);
+              document.getElementById('og-desc').setAttribute('content', d.tagline);
+            }
+          }
+        })
+        .catch(() => {});
+    </script>
+  </head>
+  <body class="antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
