@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, Trash2 } from 'lucide-react';
 import { sendAIChat as sendPublicChat } from '../../services/publicService';
+
+const suggestions = [
+  'What plans do you offer?',
+  'Is there a free trial?',
+  'How secure are my passwords?',
+  'What payment methods do you accept?',
+  'How do I get started?',
+  'Can I use it on multiple devices?',
+];
 
 export default function AIChatWidget() {
   const [open, setOpen] = useState(false);
@@ -8,14 +17,19 @@ export default function AIChatWidget() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
+  const inputRef = useRef(null);
   const visitorId = useRef('visitor_' + Date.now());
   const convId = useRef(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
-    const msg = input.trim();
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  const handleSend = async (text) => {
+    const msg = (text || input).trim();
+    if (!msg || loading) return;
     setMessages(prev => [...prev, { role: 'user', text: msg }]);
     setInput('');
     setLoading(true);
@@ -36,6 +50,18 @@ export default function AIChatWidget() {
     } finally { setLoading(false); }
   };
 
+  const handleClear = () => {
+    setMessages([{ role: 'bot', text: 'Chat cleared. How can I help you?' }]);
+    convId.current = null;
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   return (
     <>
       <button
@@ -47,13 +73,20 @@ export default function AIChatWidget() {
       </button>
 
       {open && (
-        <div className="fixed bottom-16 right-4 z-50 w-[350px] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden" style={{ height: '450px' }}>
+        <div className="fixed bottom-16 right-4 z-50 w-[350px] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden" style={{ height: '480px' }}>
           <div className="px-4 py-3 bg-orange-500 text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <MessageCircle size={16} />
               <h3 className="font-semibold text-sm">HDM AI Assistant</h3>
             </div>
-            <button onClick={() => setOpen(false)} className="hover:bg-orange-600 rounded p-0.5"><X size={16} /></button>
+            <div className="flex items-center gap-1">
+              <button onClick={handleClear} className="hover:bg-orange-600 rounded p-1" title="Clear chat">
+                <Trash2 size={14} />
+              </button>
+              <button onClick={() => setOpen(false)} className="hover:bg-orange-600 rounded p-1">
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -78,15 +111,32 @@ export default function AIChatWidget() {
             <div ref={endRef} />
           </div>
 
+          {messages.length <= 1 && (
+            <div className="px-2 pb-1 flex flex-wrap gap-1.5 shrink-0">
+              {suggestions.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSend(s)}
+                  className="px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-950 text-xs text-gray-600 dark:text-gray-400 hover:text-orange-500 rounded-full transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="p-2 border-t border-gray-200 dark:border-gray-700 flex gap-1.5 shrink-0">
             <input
+              ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSend()}
+              onKeyDown={handleKeyDown}
               placeholder="Ask me anything..."
               className="flex-1 px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
-            <button onClick={handleSend} disabled={loading} className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 shrink-0"><Send size={14} /></button>
+            <button onClick={() => handleSend()} disabled={loading || !input.trim()} className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 shrink-0">
+              <Send size={14} />
+            </button>
           </div>
         </div>
       )}

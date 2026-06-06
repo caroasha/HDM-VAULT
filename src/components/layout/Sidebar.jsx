@@ -3,6 +3,7 @@ import { Shield, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import PlanBadge from '../shared/PlanBadge';
 import { useAuth } from '../../hooks/useAuth';
+import { api } from '../../services/api';
 import { API_BASE_URL } from '../../utils/constants';
 import { LayoutDashboard, Key, AlertTriangle, Shield as ShieldIcon, Smartphone, Lock, FolderOpen, HardDrive, Scan, Settings, Sparkles, CreditCard } from 'lucide-react';
 
@@ -35,11 +36,9 @@ export default function Sidebar({ collapsed, onToggle }) {
 
   useEffect(() => {
     if (user?.orgId) {
-      import('../../services/api').then(({ api }) => {
-        api(`/admin/organizations/${user.orgId}`).then(res => {
-          if (res.success && res.data?.name) setOrgName(res.data.name);
-        }).catch(() => {});
-      });
+      api(`/admin/organizations/${user.orgId}`).then(res => {
+        if (res.success && res.data?.name) setOrgName(res.data.name);
+      }).catch(() => {});
     }
   }, [user?.orgId]);
 

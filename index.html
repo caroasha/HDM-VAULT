@@ -10,24 +10,25 @@
     <meta property="og:description" id="og-desc" content="All-in-one cybersecurity suite for complete digital protection." />
     <meta property="og:image" content="/og-image.png" />
     <title id="app-title">HDM Vault</title>
-    <script>
-      fetch('/api/v1/public/content/site-info')
-        .then(r => r.json())
-        .then(data => {
-          if (data.success && data.data) {
-            const d = data.data;
-            const titleText = d.tagline ? `${d.appName} — ${d.tagline}` : d.appName;
-            document.title = titleText;
-            document.getElementById('app-title').textContent = titleText;
-            if (d.appName) document.getElementById('og-title').setAttribute('content', d.appName);
-            if (d.tagline) {
-              document.getElementById('meta-desc').setAttribute('content', d.tagline);
-              document.getElementById('og-desc').setAttribute('content', d.tagline);
-            }
-          }
-        })
-        .catch(() => {});
-    </script>
+<script>
+  fetch('https://hdmvault-server.pxxl.click/api/v1/public/content/site-info')
+    .then(r => r.json())
+    .then(data => {
+      if (data.success && data.data) {
+        const d = data.data;
+        if (d.appName) {
+          document.title = d.tagline ? `${d.appName} — ${d.tagline}` : d.appName;
+          document.getElementById('app-title').textContent = d.appName;
+          document.getElementById('og-title').setAttribute('content', d.appName);
+        }
+        if (d.tagline) {
+          document.getElementById('meta-desc').setAttribute('content', d.tagline);
+          document.getElementById('og-desc').setAttribute('content', d.tagline);
+        }
+      }
+    })
+    .catch(() => {});
+</script>
   </head>
   <body class="antialiased">
     <div id="root"></div>
